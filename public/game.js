@@ -12,6 +12,8 @@ const player = {
   width: 50,
   height: 50,
   color: "blue",
+  speed: 0,
+  maxSpeed: 10,
 };
 
 const opponent = {
@@ -31,43 +33,68 @@ const box = {
 };
 
 const bullets = [];
+let keys = {};
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw player
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.width, player.height);
-
-  // Draw opponent
   ctx.fillStyle = opponent.color;
   ctx.fillRect(opponent.x, opponent.y, opponent.width, opponent.height);
-
-  // Draw box
   ctx.fillStyle = box.color;
   ctx.fillRect(box.x, box.y, box.width, box.height);
-
-  // Draw bullets
   bullets.forEach((bullet, index) => {
     bullet.y -= bullet.speed;
     ctx.fillStyle = bullet.color;
     ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-
-    // Remove bullet if it goes off-screen
     if (bullet.y + bullet.height < 0) {
       bullets.splice(index, 1);
     }
   });
-
   requestAnimationFrame(draw);
 }
+function updatePlayer() {
+  if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+    player.speed = -player.maxSpeed;
+  } else if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+    player.speed = player.maxSpeed;
+  } else {
+    player.speed = 0;
+  }
 
-function movePlayer(event) {
-  switch (event.key) {
-    case "ArrowLeft":
-    case "a":
-    case "A":
-      player.x -= 30; // Increased speed
-      if (player.x < 0) player.x = 0;
-      break;
-    case "ArrowRig
+  player.x += player.speed;
+
+  if (player.x < 0) player.x = 0;
+  if (player.x + player.width > canvas.width)
+    player.x = canvas.width - player.width;
+}
+
+function shoot() {
+  bullets.push({
+    x: player.x + player.width / 2 - 5,
+    y: player.y,
+    width: 10,
+    height: 10,
+    color: "black",
+    speed: 10,
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  keys[event.key] = true;
+  if (event.key === " ") {
+    shoot();
+  }
+});
+
+document.addEventListener("keyup", (event) => {
+  keys[event.key] = false;
+});
+
+function gameLoop() {
+  updatePlayer();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
