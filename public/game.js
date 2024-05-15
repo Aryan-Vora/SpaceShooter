@@ -1,10 +1,10 @@
 const socket = io();
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+const bulletSpeed = 5;
 
 const player = {
   x: canvas.width / 2 - 25,
@@ -13,7 +13,7 @@ const player = {
   height: 50,
   color: "blue",
   speed: 0,
-  maxSpeed: 10,
+  maxSpeed: 4,
 };
 
 const opponent = {
@@ -21,7 +21,7 @@ const opponent = {
   y: 10,
   width: 50,
   height: 50,
-  color: "green",
+  color: "blue",
 };
 
 const box = {
@@ -29,11 +29,13 @@ const box = {
   y: canvas.height / 2 - 25,
   width: 50,
   height: 50,
-  color: "red",
+  color: "green",
 };
 
 const bullets = [];
 let keys = {};
+let lastShotTime = 0;
+const shotCooldown = 300; // Cooldown in milliseconds
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -51,8 +53,8 @@ function draw() {
       bullets.splice(index, 1);
     }
   });
-  requestAnimationFrame(draw);
 }
+
 function updatePlayer() {
   if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
     player.speed = -player.maxSpeed;
@@ -70,26 +72,33 @@ function updatePlayer() {
 }
 
 function shoot() {
-  bullets.push({
-    x: player.x + player.width / 2 - 5,
-    y: player.y,
-    width: 10,
-    height: 10,
-    color: "black",
-    speed: 10,
-  });
+  const currentTime = Date.now();
+  if (currentTime - lastShotTime >= shotCooldown) {
+    bullets.push({
+      x: player.x + player.width / 2 - 5,
+      y: player.y,
+      width: 10,
+      height: 10,
+      color: "black",
+      speed: bulletSpeed,
+    });
+    lastShotTime = currentTime;
+  }
 }
 
 document.addEventListener("keydown", (event) => {
   keys[event.key] = true;
-  if (event.key === " ") {
-    shoot();
-  }
 });
 
 document.addEventListener("keyup", (event) => {
   keys[event.key] = false;
 });
+
+setInterval(() => {
+  if (keys[" "]) {
+    shoot();
+  }
+}, 100); // Check for shooting every 100ms
 
 function gameLoop() {
   updatePlayer();
