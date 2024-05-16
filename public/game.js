@@ -12,7 +12,8 @@ const player = {
   width: 50,
   height: 50,
   color: "blue",
-  speed: 0,
+  speedX: 0,
+  speedY: 0,
   maxSpeed: 4,
 };
 
@@ -25,7 +26,7 @@ socket.on("roomCreated", (data) => {
   roomCode = data.roomCode;
   playerId = data.playerId;
   document.getElementById("status").innerText = `Room created: ${roomCode}`;
-  hideControls();
+  hideInitialUI();
   initPlayerPosition();
 });
 
@@ -33,7 +34,7 @@ socket.on("roomJoined", (data) => {
   roomCode = data.roomCode;
   playerId = data.playerId;
   document.getElementById("status").innerText = `Joined room: ${roomCode}`;
-  hideControls();
+  hideInitialUI();
   initPlayerPosition();
 });
 
@@ -64,8 +65,10 @@ document.getElementById("queue").addEventListener("click", () => {
   socket.emit("queue");
 });
 
-function hideControls() {
-  document.getElementById("controls").style.display = "none";
+function hideInitialUI() {
+  document.getElementById("container").style.display = "none";
+  canvas.style.display = "block";
+  document.body.style.background = "#000000"; // Change background to black
 }
 
 function initPlayerPosition() {
@@ -82,7 +85,7 @@ function draw() {
     const isCurrentPlayer = id === playerId;
 
     let drawX = p.x;
-    let drawY = isCurrentPlayer ? canvas.height - p.height : 0;
+    let drawY = isCurrentPlayer ? canvas.height - p.height - 10 : 10; // Ensure opponent is at the top
 
     ctx.fillStyle = p.color;
     ctx.fillRect(drawX, drawY, p.width, p.height);
@@ -91,21 +94,35 @@ function draw() {
 
 function updatePlayer() {
   if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
-    player.speed = -player.maxSpeed;
+    player.speedX = -player.maxSpeed;
   } else if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
-    player.speed = player.maxSpeed;
+    player.speedX = player.maxSpeed;
   } else {
-    player.speed = 0;
+    player.speedX = 0;
   }
 
-  player.x += player.speed;
+  if (keys["ArrowUp"] || keys["w"] || keys["W"]) {
+    player.speedY = -player.maxSpeed;
+  } else if (keys["ArrowDown"] || keys["s"] || keys["S"]) {
+    player.speedY = player.maxSpeed;
+  } else {
+    player.speedY = 0;
+  }
 
+  player.x += player.speedX;
+  player.y += player.speedY;
+
+  // Constrain player to screen boundaries
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > canvas.width)
     player.x = canvas.width - player.width;
+  if (player.y < canvas.height - canvas.height * 0.2)
+    player.y = canvas.height - canvas.height * 0.2;
+  if (player.y + player.height > canvas.height)
+    player.y = canvas.height - player.height;
 
   if (roomCode) {
-    socket.emit("move", {roomCode, x: player.x});
+    socket.emit("move", {roomCode, x: player.x, y: player.y});
   }
 }
 

@@ -1,0 +1,74 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Arial", sans-serif;
+  background: linear-gradient(180deg, #000428, #004e92);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay for better text visibility */
+  padding: 2vw;
+  border-radius: 1vw;
+  width: 30vw;
+}
+
+#logo-container {
+  margin-bottom: 2vh;
+}
+
+#logo-text {
+  font-size: 4vw;
+  color: #00bfff;
+  text-shadow: 2px 2px 4px #000000;
+  font-family: "Orbitron", sans-serif; /* Futuristic font */
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#controls input,
+#controls button {
+  margin: 1vh;
+  padding: 1vh 2vw;
+  font-size: 1.5vw;
+  border-radius: 0.5vw;
+  border: none;
+  outline: none;
+  width: 100%; /* Make all buttons and input the same width */
+  box-sizing: border-box;
+}
+
+#controls input {
+  width: 100%; /* Ensure the input field is the same width as buttons */
+}
+
+#controls button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#controls button:hover {
+  background-color: #0056b3;
+}
+
+canvas {
+  display: none;
+}
+
+.hidden {
+  display: none;
+}

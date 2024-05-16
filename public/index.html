@@ -4,29 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multiplayer Space Shooter</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-      }
-      #controls {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-      }
-    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="controls">
-      <button id="createRoom">Create Room</button>
-      <input type="text" id="roomCode" placeholder="Room Code" />
-      <button id="joinRoom">Join Room</button>
-      <button id="queue">Queue</button>
-      <p id="status"></p>
+    <div id="container">
+      <div id="logo-container">
+        <h1 id="logo-text">Space Shooter</h1>
+      </div>
+      <div id="controls">
+        <button id="queue">Queue</button>
+        <button id="createRoom">Create Room</button>
+        <button id="joinRoom">Join Room</button>
+        <input type="text" id="roomCode" placeholder="Room Code" />
+        <p id="status"></p>
+      </div>
     </div>
     <canvas id="gameCanvas"></canvas>
     <script src="/socket.io/socket.io.js"></script>
