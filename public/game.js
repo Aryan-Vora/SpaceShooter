@@ -1,10 +1,10 @@
 const socket = io();
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const bulletSpeed = 5;
 
 const player = {
   x: canvas.width / 2 - 25,
@@ -16,43 +16,77 @@ const player = {
   maxSpeed: 4,
 };
 
-const opponent = {
-  x: canvas.width / 2 - 25,
-  y: 10,
-  width: 50,
-  height: 50,
-  color: "blue",
-};
-
-const box = {
-  x: canvas.width / 2 - 25,
-  y: canvas.height / 2 - 25,
-  width: 50,
-  height: 50,
-  color: "green",
-};
-
-const bullets = [];
+const players = {};
 let keys = {};
-let lastShotTime = 0;
-const shotCooldown = 300; // Cooldown in milliseconds
+let roomCode = null;
+let playerId = null;
+
+socket.on("roomCreated", (data) => {
+  roomCode = data.roomCode;
+  playerId = data.playerId;
+  document.getElementById("status").innerText = `Room created: ${roomCode}`;
+  hideControls();
+  initPlayerPosition();
+});
+
+socket.on("roomJoined", (data) => {
+  roomCode = data.roomCode;
+  playerId = data.playerId;
+  document.getElementById("status").innerText = `Joined room: ${roomCode}`;
+  hideControls();
+  initPlayerPosition();
+});
+
+socket.on("updatePlayers", (data) => {
+  Object.assign(players, data);
+});
+
+socket.on("playerLeft", (playerId) => {
+  delete players[playerId];
+});
+
+socket.on("error", (message) => {
+  document.getElementById("status").innerText = message;
+});
+
+document.getElementById("createRoom").addEventListener("click", () => {
+  socket.emit("createRoom");
+});
+
+document.getElementById("joinRoom").addEventListener("click", () => {
+  const code = document.getElementById("roomCode").value;
+  if (code) {
+    socket.emit("joinRoom", code);
+  }
+});
+
+document.getElementById("queue").addEventListener("click", () => {
+  socket.emit("queue");
+});
+
+function hideControls() {
+  document.getElementById("controls").style.display = "none";
+}
+
+function initPlayerPosition() {
+  player.x = canvas.width / 2 - player.width / 2;
+  player.y = canvas.height - player.height - 10; // Place player near the bottom
+  players[playerId] = player; // Ensure the player object is in the players list
+}
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-  ctx.fillStyle = opponent.color;
-  ctx.fillRect(opponent.x, opponent.y, opponent.width, opponent.height);
-  ctx.fillStyle = box.color;
-  ctx.fillRect(box.x, box.y, box.width, box.height);
-  bullets.forEach((bullet, index) => {
-    bullet.y -= bullet.speed;
-    ctx.fillStyle = bullet.color;
-    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    if (bullet.y + bullet.height < 0) {
-      bullets.splice(index, 1);
-    }
-  });
+
+  for (let id in players) {
+    const p = players[id];
+    const isCurrentPlayer = id === playerId;
+
+    let drawX = p.x;
+    let drawY = isCurrentPlayer ? canvas.height - p.height : 0;
+
+    ctx.fillStyle = p.color;
+    ctx.fillRect(drawX, drawY, p.width, p.height);
+  }
 }
 
 function updatePlayer() {
@@ -69,20 +103,9 @@ function updatePlayer() {
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > canvas.width)
     player.x = canvas.width - player.width;
-}
 
-function shoot() {
-  const currentTime = Date.now();
-  if (currentTime - lastShotTime >= shotCooldown) {
-    bullets.push({
-      x: player.x + player.width / 2 - 5,
-      y: player.y,
-      width: 10,
-      height: 10,
-      color: "black",
-      speed: bulletSpeed,
-    });
-    lastShotTime = currentTime;
+  if (roomCode) {
+    socket.emit("move", {roomCode, x: player.x});
   }
 }
 
@@ -93,12 +116,6 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("keyup", (event) => {
   keys[event.key] = false;
 });
-
-setInterval(() => {
-  if (keys[" "]) {
-    shoot();
-  }
-}, 100); // Check for shooting every 100ms
 
 function gameLoop() {
   updatePlayer();
