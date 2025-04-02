@@ -1,7 +1,5 @@
 # SpaceShooter
 
-SpaceShooter is a multiplayer browser game where players navigate space, shoot each other, and aim for upgrade boxes that appear in the middle of the play area.
-
 ## Controls
 
 - **Movement:** Use the arrow keys or WASD to move your spaceship.
@@ -41,4 +39,3 @@ SpaceShooter is a multiplayer browser game where players navigate space, shoot e
 
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js, Express
-- **WebSockets:** Socket.IO for real-time communication
